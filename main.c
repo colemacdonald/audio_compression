@@ -1,7 +1,7 @@
 /*
  * MAIN.C
  *
- * This file contains the program written for the SENG440 Project
+ * This file contains the program written for the SENGheader_size0 Project
  * written by Cole Macdonald and Noah Silvera
  *
  */
@@ -12,9 +12,12 @@
 
 
 /******** ENUMS **********/
-enum Comp { u1, u3, u7, u15, u31, u63, u127, u255 };
+enum Comp { u1, u3, u7, u15, u31, u63, u127, u255, u511, u1023 };
 
-int u_vals[] =  { 1, 3, 7, 15, 31, 63, 127, 255 };
+int u_vals[] =  { 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023 };
+
+int header_size = 66;
+int compression_constant = u1023;
 
 /************** PROTOTYPES ************/
 
@@ -22,95 +25,122 @@ int pwlog2(int);
 
 int inv_pwlog2(int);
 
-int ln(int);
-
 int16_t decompress_u(enum Comp, int16_t);
 
 int16_t compress_u(enum Comp, int16_t);
 
-int convert_to_int(double);
-
-
-
-void test_pwlog2()
-{
-}
+int16_t compress(int16_t);
+int16_t decompress(int16_t);
 
 /********** MAIN **********/
 int main(void)
 {
-	/*
 	// Read in test file
 	FILE * fp = fopen("sample.wav", "rb");
-	char * buffer;
 		
 	fseek(fp, 0, SEEK_END); 
 	long filelen = ftell(fp);	
 	rewind(fp);
 
-	buffer = (char *)malloc((filelen+1)); 
+	// wav buffer
+	char * buffer = (char *)malloc((filelen+1)); 
 	fread(buffer, filelen, 1, fp); 
 	fclose(fp); 
 	
 	// ignore header
-	char * data_start = buffer + 44;
+	char * data_start = buffer + header_size;
 	
-	// don't need to store header
-	int16_t * wav_data = (int16_t*)malloc(filelen + 1 - 44);
-	int16_t * compressed_data = (int16_t*)malloc(filelen + 1 - 44);	
+	// allocate memory - don't need to store header
+	int16_t * wav_data = (int16_t*)malloc(filelen + 1 - header_size);
+	int16_t * compressed_data = (int16_t*)malloc(filelen + 1 - header_size);	
+	int16_t * decompressed_data = (int16_t*)malloc(filelen + 1 - header_size);
 
 	// read data as int16
 	int i;
 	int w;
-	for (i = 0, w = 0; i < filelen - 44; i+=2, w++)
+	for (i = 0, w = 0; i < filelen - header_size; i+=2, w++)
 	{
 		wav_data[w] = (int16_t)(data_start[i] & 0xff) ;
 		wav_data[w] |= (data_start[i+1] << 8);
 	}
 
-	for (i = 0; i < filelen/2; i++)
+	// compress data
+	for (i = 0; i < (filelen - header_size)/2; i++)
 	{
-		compressed_data[i] = compress_u(u15, wav_data[i]);
+//		compressed_data[i] = compress_u(compression_constant, wav_data[i]);
+		compressed_data[i] = compress(wav_data[i]);
 	}
 
+	// print first 50
 	for (i = 0; i < 50; i++)
 	{
-		printf("%d, %d\n", wav_data[i], compressed_data[i]);
+		printf("%d, %d\n", wav_data[i + 60], compressed_data[i + 60]);
 	}
-
 	printf("\n");
 
+	// decompress
+	for (i = 0; i < (filelen - header_size)/2; i++)
+	{
+//		decompressed_data[i] = decompress_u(compression_constant, compressed_data[i]);	
+		decompressed_data[i] = decompress(compressed_data[i]);
+	}
+
+	// write to file
 	FILE* outfile = fopen("out.wav", "wb");
 
-	fwrite(buffer, 1, 44, outfile);
-	fwrite(
+	fwrite(buffer, 1, header_size, outfile);
+	fwrite(decompressed_data, 2, (filelen - header_size)/2, outfile);
 
+	// free memory
+	free(decompressed_data);
+	free(compressed_data);	
 	free(wav_data);
-	free(buffer);	
-	*/
+	free(buffer);
 
-	int x0 = 40098;
-	int y = compress_u(u15, x0);
-	int x1 = decompress_u(u15, y);
+	// close outfile
+	fclose(outfile);
 
-	printf("%d --c->  %d --d-> %d\n", x0, y, x1);	
+	int16_t asdf = compress(32000);
+	printf("%d\n", 32000);
+	printf("%d\n", asdf);
+	printf("%d\n", decompress(asdf));
+	
 
-	int a = pwlog2(x0);
-	int b = inv_pwlog2(a);
-
-	printf("%d --log-> %d --invlog-> %d\n", x0, a, b);
-
-	x1 = 280005;
-	a = pwlog2(x1);
-	b = inv_pwlog2(a);
-
-	printf("%d --log-> %d --invlog-> %d\n", x1, a, b);
 	return 0;
 }
 
-int convert_to_int(double x)
+int f_pwlog2(int x)
 {
-	return x * 32768.0;
+	if (x < (1 << 4))
+		return x;
+
+	if (x < (1 << 8))
+		return (x >> 1) + (1 << 3);
+	
+	if (x < (1 << 12))
+		return (x >> 3) + (1 << 7);
+
+	if (x < (1 << 16))
+		return (x >> 6) + (1 << 9);
+
+	return -1; // error
+}
+
+int inv_f_pwlog2(int y)
+{
+	if (y < (1 << 4))
+		return y;
+
+	if (y < (1 << 3) + (1 << 7))
+		return (y - (1 << 3)) << 1;
+
+	if (y < (1 << 7) + (1 << 9))
+		return (y - (1 << 7)) << 3;
+
+	if (y < (1 << 10))
+		return (y - (1 << 9)) << 6;
+
+	return -1; // error
 }
 
 int pwlog2(int x)
@@ -145,6 +175,9 @@ int pwlog2(int x)
 	if (x < (1 << 24))
 		return ((x >> 8) + (1 << 21));	
 
+	if (x < (1 << 25))
+		return ((x >> 9) + (1 << 22));
+
 	return -1; // error
 }
 
@@ -177,12 +210,10 @@ int inv_pwlog2(int y)
 	if (y < ((1 << 16) + (1 << 21)))
 		return ((y - (1 << 21)) << 8);
 
+	if (y < ((1 << 17) + (1 << 22)))
+		return ((y - (1 << 22)) << 9);
+	
 	return -1; // error
-}
-
-int ln(int x)
-{
-	return 0;
 }
 
 
@@ -195,8 +226,35 @@ int16_t decompress_u(enum Comp u, int16_t Y)
 		sign = -1;
 		Y = -Y;
 	}
+	
+	return sign * (inv_pwlog2(Y * u_vals[u]) - 32768) / u_vals[u];
+	
+}
 
-	return sign * (int)15 * (inv_pwlog2(Y) - 32768)/u_vals[u];
+int16_t compress(int16_t x)
+{
+	int16_t sign = 1;
+
+	if (x < 0)
+	{
+		x = -x;
+		sign = -1;
+	}
+
+	return sign * f_pwlog2(x);	
+}
+
+int16_t decompress(int16_t y)
+{
+	int16_t sign = 1;
+	
+	if (y < 0)
+	{
+		y = -y;
+		sign = -1;
+	}
+
+	return sign * inv_f_pwlog2(y);
 }
 
 int16_t compress_u(enum Comp u, int16_t X)
@@ -209,5 +267,5 @@ int16_t compress_u(enum Comp u, int16_t X)
 		X = -X;
 	}		
 	
-	return sign * (pwlog2((32768) + u_vals[u] * X)) / (int)(15);
+	return sign * (pwlog2((32768) + u_vals[u] * X)) / u_vals[u];
 }
