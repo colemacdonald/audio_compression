@@ -1,0 +1,181 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 55.43     11.07    11.07                             mcount_internal
+ 20.63     15.19     4.12                             __gnu_mcount_nc
+  6.71     16.53     1.34  6570427     0.00     0.00  inv_pwlog2
+  5.86     17.70     1.17  6570427     0.00     0.00  pwlog2
+  5.26     18.75     1.05        1     1.05     2.39  decompress_buffer
+  5.06     19.76     1.01        1     1.01     2.18  compress_buffer
+  0.85     19.93     0.17        1     0.17     4.74  main
+  0.05     19.94     0.01                             _IO_file_close
+  0.05     19.95     0.01                             _wordcopy_fwd_dest_aligned
+  0.05     19.96     0.01                             read
+  0.05     19.97     0.01                             write
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+ 
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this 
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 4 byte(s) for 0.05% of 19.97 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]     55.4   11.07    0.00                 mcount_internal [1]
+-----------------------------------------------
+                0.17    4.57       1/1           __libc_start_main [3]
+[2]     23.7    0.17    4.57       1         main [2]
+                1.05    1.34       1/1           decompress_buffer [5]
+                1.01    1.17       1/1           compress_buffer [6]
+-----------------------------------------------
+                                                 <spontaneous>
+[3]     23.7    0.00    4.74                 __libc_start_main [3]
+                0.17    4.57       1/1           main [2]
+-----------------------------------------------
+                                                 <spontaneous>
+[4]     20.6    4.12    0.00                 __gnu_mcount_nc [4]
+-----------------------------------------------
+                1.05    1.34       1/1           main [2]
+[5]     12.0    1.05    1.34       1         decompress_buffer [5]
+                1.34    0.00 6570427/6570427     inv_pwlog2 [7]
+-----------------------------------------------
+                1.01    1.17       1/1           main [2]
+[6]     10.9    1.01    1.17       1         compress_buffer [6]
+                1.17    0.00 6570427/6570427     pwlog2 [8]
+-----------------------------------------------
+                1.34    0.00 6570427/6570427     decompress_buffer [5]
+[7]      6.7    1.34    0.00 6570427         inv_pwlog2 [7]
+-----------------------------------------------
+                1.17    0.00 6570427/6570427     compress_buffer [6]
+[8]      5.9    1.17    0.00 6570427         pwlog2 [8]
+-----------------------------------------------
+                                                 <spontaneous>
+[9]      0.1    0.01    0.00                 read [9]
+-----------------------------------------------
+                                                 <spontaneous>
+[10]     0.1    0.01    0.00                 write [10]
+-----------------------------------------------
+                                                 <spontaneous>
+[11]     0.1    0.01    0.00                 _IO_file_close [11]
+-----------------------------------------------
+                                                 <spontaneous>
+[12]     0.1    0.01    0.00                 _wordcopy_fwd_dest_aligned [12]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+
+Index by function name
+
+  [11] _IO_file_close          [5] decompress_buffer       [8] pwlog2
+   [4] __gnu_mcount_nc         [7] inv_pwlog2              [9] read
+  [12] _wordcopy_fwd_dest_aligned [2] main                [10] write
+   [6] compress_buffer         [1] mcount_internal
