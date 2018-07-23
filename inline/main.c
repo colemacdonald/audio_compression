@@ -19,8 +19,8 @@ int header_size = 66;
 inline int pwlog2(int);
 inline int inv_pwlog2(int);
 
-void compress_buffer(int16_t *, int16_t *, int);
-void decompress_buffer(int16_t *, int16_t *, int);
+inline void compress_buffer(int16_t *, int16_t *, int);
+inline void decompress_buffer(int16_t *, int16_t *, int);
 
 /********** MAIN **********/
 int main(int argc, char** argv)
@@ -114,7 +114,7 @@ inline int inv_pwlog2(int y)
 }
 
 
-void compress_buffer(int16_t * src, int16_t * dst, int len)
+inline void compress_buffer(int16_t * src, int16_t * dst, int len)
 {
 	int i;
 	for (i = 0; i < len; i++)
@@ -132,7 +132,7 @@ void compress_buffer(int16_t * src, int16_t * dst, int len)
 	}
 }
 
-void decompress_buffer(int16_t * src, int16_t * dst, int len)
+inline void decompress_buffer(int16_t * src, int16_t * dst, int len)
 {
 	int i;
 	for (i = 0; i < len; i++)

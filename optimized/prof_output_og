@@ -3,15 +3,17 @@ Flat profile:
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
  time   seconds   seconds    calls   s/call   s/call  name    
- 52.42      2.27     2.27                             mcount_internal
- 18.94      3.09     0.82                             __gnu_mcount_nc
-  7.39      3.41     0.32  6570427     0.00     0.00  inv_pwlog2
-  6.93      3.71     0.30  6570427     0.00     0.00  pwlog2
-  6.24      3.98     0.27        1     0.27     0.59  decompress_buffer
-  5.31      4.21     0.23        1     0.23     0.53  compress_buffer
-  2.31      4.31     0.10        1     0.10     1.22  main
-  0.23      4.32     0.01                             read
-  0.23      4.33     0.01                             write
+ 55.43     11.07    11.07                             mcount_internal
+ 20.63     15.19     4.12                             __gnu_mcount_nc
+  6.71     16.53     1.34  6570427     0.00     0.00  inv_pwlog2
+  5.86     17.70     1.17  6570427     0.00     0.00  pwlog2
+  5.26     18.75     1.05        1     1.05     2.39  decompress_buffer
+  5.06     19.76     1.01        1     1.01     2.18  compress_buffer
+  0.85     19.93     0.17        1     0.17     4.74  main
+  0.05     19.94     0.01                             _IO_file_close
+  0.05     19.95     0.01                             _wordcopy_fwd_dest_aligned
+  0.05     19.96     0.01                             read
+  0.05     19.97     0.01                             write
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -25,13 +27,13 @@ seconds    function alone.  This is the major sort for this
 
 calls      the number of times this function was invoked, if
            this function is profiled, else blank.
-
+ 
  self      the average number of milliseconds spent in this
 ms/call    function per call, if this function is profiled,
 	   else blank.
 
  total     the average number of milliseconds spent in this
-ms/call    function and its descendents per call, if this
+ms/call    function and its descendents per call, if this 
 	   function is profiled, else blank.
 
 name       the name of the function.  This is the minor sort
@@ -40,52 +42,52 @@ name       the name of the function.  This is the minor sort
 	   in parenthesis it shows where it would appear in
 	   the gprof listing if it were to be printed.
 
-Copyright (C) 2012-2016 Free Software Foundation, Inc.
-
-Copying and distribution of this file, with or without modification,
-are permitted in any medium without royalty provided the copyright
-notice and this notice are preserved.
-
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 4 byte(s) for 0.23% of 4.33 seconds
+granularity: each sample hit covers 4 byte(s) for 0.05% of 19.97 seconds
 
 index % time    self  children    called     name
                                                  <spontaneous>
-[1]     52.4    2.27    0.00                 mcount_internal [1]
+[1]     55.4   11.07    0.00                 mcount_internal [1]
 -----------------------------------------------
-                0.10    1.12       1/1           __libc_start_main [3]
-[2]     28.2    0.10    1.12       1         main [2]
-                0.27    0.32       1/1           decompress_buffer [5]
-                0.23    0.30       1/1           compress_buffer [6]
------------------------------------------------
-                                                 <spontaneous>
-[3]     28.2    0.00    1.22                 __libc_start_main [3]
-                0.10    1.12       1/1           main [2]
+                0.17    4.57       1/1           __libc_start_main [3]
+[2]     23.7    0.17    4.57       1         main [2]
+                1.05    1.34       1/1           decompress_buffer [5]
+                1.01    1.17       1/1           compress_buffer [6]
 -----------------------------------------------
                                                  <spontaneous>
-[4]     18.9    0.82    0.00                 __gnu_mcount_nc [4]
------------------------------------------------
-                0.27    0.32       1/1           main [2]
-[5]     13.6    0.27    0.32       1         decompress_buffer [5]
-                0.32    0.00 6570427/6570427     inv_pwlog2 [7]
------------------------------------------------
-                0.23    0.30       1/1           main [2]
-[6]     12.2    0.23    0.30       1         compress_buffer [6]
-                0.30    0.00 6570427/6570427     pwlog2 [8]
------------------------------------------------
-                0.32    0.00 6570427/6570427     decompress_buffer [5]
-[7]      7.4    0.32    0.00 6570427         inv_pwlog2 [7]
------------------------------------------------
-                0.30    0.00 6570427/6570427     compress_buffer [6]
-[8]      6.9    0.30    0.00 6570427         pwlog2 [8]
+[3]     23.7    0.00    4.74                 __libc_start_main [3]
+                0.17    4.57       1/1           main [2]
 -----------------------------------------------
                                                  <spontaneous>
-[9]      0.2    0.01    0.00                 read [9]
+[4]     20.6    4.12    0.00                 __gnu_mcount_nc [4]
+-----------------------------------------------
+                1.05    1.34       1/1           main [2]
+[5]     12.0    1.05    1.34       1         decompress_buffer [5]
+                1.34    0.00 6570427/6570427     inv_pwlog2 [7]
+-----------------------------------------------
+                1.01    1.17       1/1           main [2]
+[6]     10.9    1.01    1.17       1         compress_buffer [6]
+                1.17    0.00 6570427/6570427     pwlog2 [8]
+-----------------------------------------------
+                1.34    0.00 6570427/6570427     decompress_buffer [5]
+[7]      6.7    1.34    0.00 6570427         inv_pwlog2 [7]
+-----------------------------------------------
+                1.17    0.00 6570427/6570427     compress_buffer [6]
+[8]      5.9    1.17    0.00 6570427         pwlog2 [8]
 -----------------------------------------------
                                                  <spontaneous>
-[10]     0.2    0.01    0.00                 write [10]
+[9]      0.1    0.01    0.00                 read [9]
+-----------------------------------------------
+                                                 <spontaneous>
+[10]     0.1    0.01    0.00                 write [10]
+-----------------------------------------------
+                                                 <spontaneous>
+[11]     0.1    0.01    0.00                 _IO_file_close [11]
+-----------------------------------------------
+                                                 <spontaneous>
+[12]     0.1    0.01    0.00                 _wordcopy_fwd_dest_aligned [12]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -99,7 +101,7 @@ index % time    self  children    called     name
      index	A unique number given to each element of the table.
 		Index numbers are sorted numerically.
 		The index number is printed next to every function name so
-		it is easier to look up where the function is in the table.
+		it is easier to look up where the function in the table.
 
      % time	This is the percentage of the `total' time that was spent
 		in this function and its children.  Note that due to
@@ -169,15 +171,11 @@ index % time    self  children    called     name
  were internal to the cycle, and the calls entry for each member shows,
  for that member, how many times it was called from other members of
  the cycle.
-
-Copyright (C) 2012-2016 Free Software Foundation, Inc.
 
-Copying and distribution of this file, with or without modification,
-are permitted in any medium without royalty provided the copyright
-notice and this notice are preserved.
 
 Index by function name
 
-   [4] __gnu_mcount_nc         [7] inv_pwlog2              [8] pwlog2
-   [6] compress_buffer         [2] main                    [9] read
-   [5] decompress_buffer       [1] mcount_internal        [10] write
+  [11] _IO_file_close          [5] decompress_buffer       [8] pwlog2
+   [4] __gnu_mcount_nc         [7] inv_pwlog2              [9] read
+  [12] _wordcopy_fwd_dest_aligned [2] main                [10] write
+   [6] compress_buffer         [1] mcount_internal

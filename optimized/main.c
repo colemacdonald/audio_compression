@@ -56,10 +56,10 @@ int main(int argc, char** argv)
 
 
 	// compress data
-	compress_buffer(wav_data, compressed_data, (filelen - header_size)/2 - 1);
+	compress_buffer(wav_data, compressed_data, (filelen - header_size)/2);
 	
 	// decompress
-	decompress_buffer(compressed_data, decompressed_data, (filelen - header_size)/2 - 1);	
+	decompress_buffer(compressed_data, decompressed_data, (filelen - header_size)/2);	
 
 	// write to file
 	FILE* outfile = fopen("out.wav", "wb");
@@ -117,14 +117,38 @@ inline int inv_pwlog2(int y)
 void compress_buffer(int16_t * src, int16_t * dst, int len)
 {
 	int i = len - 1;
+
+	// loop unrolling case
+	if (!(len%2))
+	{
+		int16_t x = src[i];
+		int sign = 0;
+
+		if (x & 0x8000)
+		{
+			x = -x;
+			++sign;
+		}
+
+		if (sign)
+			dst[i] = -pwlog2(x);
+		else
+			dst[i] = pwlog2(x);	
+
+		--i;
+	}
+
+	// optimize for loop conditions
 	for (; i; i-=2)
 	{
+		// unroll loop once, paralize to reduce data dependencies
 		int16_t x1 = src[i];
 		int16_t x2 = src[i - 1];
 
 		int sign1 = 0;
 		int sign2 = 0;
 
+		// check sign bit (two's complement signed integer)
 		if (x1 & 0x8000)
 		{
 			x1 = -x1;
@@ -137,14 +161,15 @@ void compress_buffer(int16_t * src, int16_t * dst, int len)
 			++sign2;
 		}
 
-		dst[i] = pwlog2(x1);
-		dst[i - 1] = pwlog2(x2);
-
 		if (sign1)
-			dst[i] = -dst[i];		
+			dst[i] = -pwlog2(x1);		
+		else
+			dst[i] = pwlog2(x1);
 
 		if (sign2)
-			dst[i - 1] = -dst[i - 1];
+			dst[i - 1] = -pwlog2(x2);
+		else
+			dst[i - 1] = pwlog2(x2);
 	}
 	// handle i = 0
 	int16_t x = src[0];
@@ -156,15 +181,33 @@ void compress_buffer(int16_t * src, int16_t * dst, int len)
 		++sign;
 	}
 
-	dst[0] = pwlog2(x);
-
 	if (sign)
-		dst[0] = -dst[0];	
+		dst[0] = -pwlog2(x);
+	else
+		dst[0] = pwlog2(x);	
 }
 
 void decompress_buffer(int16_t * src, int16_t * dst, int len)
 {
 	int i = len - 1;
+
+	if (!(len%2))
+	{
+		int16_t y = src[0];
+		int sign = 0;
+
+		if (y & 0x8000)
+		{
+			y = -y;
+			++sign;
+		}
+
+		if (sign)
+			dst[0] = -inv_pwlog2(y);
+		else
+			dst[0] = inv_pwlog2(y);
+		--i;
+	}
 	for (; i; i-=2)
 	{
 		int sign1 = 0;
@@ -204,8 +247,8 @@ void decompress_buffer(int16_t * src, int16_t * dst, int len)
 		++sign;
 	}
 
-	dst[0] = inv_pwlog2(y);
-
 	if (sign)
-		dst[0] = -dst[0];
+		dst[0] = -inv_pwlog2(y);
+	else
+		dst[0] = inv_pwlog2(y);
 }
