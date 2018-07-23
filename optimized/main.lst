@@ -1,0 +1,1200 @@
+   1              		.arch armv4t
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 2
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"main.c"
+  19              	.Ltext0:
+  20              		.global	header_size
+  21              		.data
+  22              		.align	2
+  25              	header_size:
+  26 0000 42000000 		.word	66
+  27              		.section	.rodata
+  28              		.align	2
+  29              	.LC0:
+  30 0000 2E2E2F61 		.ascii	"../africa-toto.wav\000"
+  30      66726963 
+  30      612D746F 
+  30      746F2E77 
+  30      617600
+  31 0013 00       		.align	2
+  32              	.LC1:
+  33 0014 726200   		.ascii	"rb\000"
+  34 0017 00       		.align	2
+  35              	.LC2:
+  36 0018 6F75742E 		.ascii	"out.wav\000"
+  36      77617600 
+  37              		.align	2
+  38              	.LC3:
+  39 0020 776200   		.ascii	"wb\000"
+  40 0023 00       		.text
+  41              		.align	2
+  42              		.global	main
+  44              	main:
+  45              	.LFB2:
+  46              		.file 1 "main.c"
+   1:main.c        **** /*
+   2:main.c        ****  * MAIN.C
+   3:main.c        ****  *
+   4:main.c        ****  * This file contains the program written for the SENGheader_size0 Project
+   5:main.c        ****  * written by Cole Macdonald and Noah Silvera
+   6:main.c        ****  *
+   7:main.c        ****  */
+   8:main.c        **** 
+   9:main.c        **** #include <stdio.h>
+  10:main.c        **** #include <stdint.h>
+  11:main.c        **** #include <stdlib.h>
+  12:main.c        **** #include <time.h>
+  13:main.c        **** 
+  14:main.c        **** /******** CONSTANT **********/
+  15:main.c        **** int header_size = 66;
+  16:main.c        **** 
+  17:main.c        **** /************** PROTOTYPES ************/
+  18:main.c        **** 
+  19:main.c        **** int pwlog2(int);
+  20:main.c        **** int inv_pwlog2(int);
+  21:main.c        **** 
+  22:main.c        **** void compress_buffer(int16_t *, int16_t *, int);
+  23:main.c        **** void decompress_buffer(int16_t *, int16_t *, int);
+  24:main.c        **** 
+  25:main.c        **** /********** MAIN **********/
+  26:main.c        **** int main(int argc, char** argv)
+  27:main.c        **** {
+  47              		.loc 1 27 0
+  48              		@ Function supports interworking.
+  49              		@ args = 0, pretend = 0, frame = 48
+  50              		@ frame_needed = 1, uses_anonymous_args = 0
+  51 0000 00482DE9 		stmfd	sp!, {fp, lr}
+  52              	.LCFI0:
+  53 0004 04B08DE2 		add	fp, sp, #4
+  54              	.LCFI1:
+  55 0008 30D04DE2 		sub	sp, sp, #48
+  56              	.LCFI2:
+  57 000c 30000BE5 		str	r0, [fp, #-48]
+  58 0010 34100BE5 		str	r1, [fp, #-52]
+  28:main.c        **** 	// Read in test file
+  29:main.c        **** 	FILE * fp = fopen("../africa-toto.wav", "rb");
+  59              		.loc 1 29 0
+  60 0014 A8029FE5 		ldr	r0, .L5
+  61 0018 A8129FE5 		ldr	r1, .L5+4
+  62 001c FEFFFFEB 		bl	fopen
+  63 0020 0030A0E1 		mov	r3, r0
+  64 0024 2C300BE5 		str	r3, [fp, #-44]
+  30:main.c        **** 	
+  31:main.c        **** 	fseek(fp, 0, SEEK_END); 
+  65              		.loc 1 31 0
+  66 0028 2C001BE5 		ldr	r0, [fp, #-44]
+  67 002c 0010A0E3 		mov	r1, #0
+  68 0030 0220A0E3 		mov	r2, #2
+  69 0034 FEFFFFEB 		bl	fseek
+  32:main.c        **** 	long filelen = ftell(fp);	
+  70              		.loc 1 32 0
+  71 0038 2C001BE5 		ldr	r0, [fp, #-44]
+  72 003c FEFFFFEB 		bl	ftell
+  73 0040 0030A0E1 		mov	r3, r0
+  74 0044 28300BE5 		str	r3, [fp, #-40]
+  33:main.c        **** 	rewind(fp);
+  75              		.loc 1 33 0
+  76 0048 2C001BE5 		ldr	r0, [fp, #-44]
+  77 004c FEFFFFEB 		bl	rewind
+  34:main.c        **** 
+  35:main.c        **** 	// wav buffer
+  36:main.c        **** 	char * buffer = (char *)malloc((filelen+1)); 
+  78              		.loc 1 36 0
+  79 0050 28301BE5 		ldr	r3, [fp, #-40]
+  80 0054 013083E2 		add	r3, r3, #1
+  81 0058 0300A0E1 		mov	r0, r3
+  82 005c FEFFFFEB 		bl	malloc
+  83 0060 0030A0E1 		mov	r3, r0
+  84 0064 24300BE5 		str	r3, [fp, #-36]
+  37:main.c        **** 	fread(buffer, filelen, 1, fp); 
+  85              		.loc 1 37 0
+  86 0068 28301BE5 		ldr	r3, [fp, #-40]
+  87 006c 24001BE5 		ldr	r0, [fp, #-36]
+  88 0070 0310A0E1 		mov	r1, r3
+  89 0074 0120A0E3 		mov	r2, #1
+  90 0078 2C301BE5 		ldr	r3, [fp, #-44]
+  91 007c FEFFFFEB 		bl	fread
+  38:main.c        **** 	fclose(fp); 
+  92              		.loc 1 38 0
+  93 0080 2C001BE5 		ldr	r0, [fp, #-44]
+  94 0084 FEFFFFEB 		bl	fclose
+  39:main.c        **** 	
+  40:main.c        **** 	// ignore header
+  41:main.c        **** 	char * data_start = buffer + header_size;
+  95              		.loc 1 41 0
+  96 0088 3C329FE5 		ldr	r3, .L5+8
+  97 008c 003093E5 		ldr	r3, [r3, #0]
+  98 0090 0320A0E1 		mov	r2, r3
+  99 0094 24301BE5 		ldr	r3, [fp, #-36]
+ 100 0098 023083E0 		add	r3, r3, r2
+ 101 009c 20300BE5 		str	r3, [fp, #-32]
+  42:main.c        **** 	
+  43:main.c        **** 	// allocate memory - don't need to store header
+  44:main.c        **** 	int16_t * wav_data = (int16_t*)malloc(filelen + 1 - header_size);
+ 102              		.loc 1 44 0
+ 103 00a0 28301BE5 		ldr	r3, [fp, #-40]
+ 104 00a4 012083E2 		add	r2, r3, #1
+ 105 00a8 1C329FE5 		ldr	r3, .L5+8
+ 106 00ac 003093E5 		ldr	r3, [r3, #0]
+ 107 00b0 023063E0 		rsb	r3, r3, r2
+ 108 00b4 0300A0E1 		mov	r0, r3
+ 109 00b8 FEFFFFEB 		bl	malloc
+ 110 00bc 0030A0E1 		mov	r3, r0
+ 111 00c0 1C300BE5 		str	r3, [fp, #-28]
+  45:main.c        **** 	int16_t * compressed_data = (int16_t*)malloc(filelen + 1 - header_size);	
+ 112              		.loc 1 45 0
+ 113 00c4 28301BE5 		ldr	r3, [fp, #-40]
+ 114 00c8 012083E2 		add	r2, r3, #1
+ 115 00cc F8319FE5 		ldr	r3, .L5+8
+ 116 00d0 003093E5 		ldr	r3, [r3, #0]
+ 117 00d4 023063E0 		rsb	r3, r3, r2
+ 118 00d8 0300A0E1 		mov	r0, r3
+ 119 00dc FEFFFFEB 		bl	malloc
+ 120 00e0 0030A0E1 		mov	r3, r0
+ 121 00e4 18300BE5 		str	r3, [fp, #-24]
+  46:main.c        **** 	int16_t * decompressed_data = (int16_t*)malloc(filelen + 1 - header_size);
+ 122              		.loc 1 46 0
+ 123 00e8 28301BE5 		ldr	r3, [fp, #-40]
+ 124 00ec 012083E2 		add	r2, r3, #1
+ 125 00f0 D4319FE5 		ldr	r3, .L5+8
+ 126 00f4 003093E5 		ldr	r3, [r3, #0]
+ 127 00f8 023063E0 		rsb	r3, r3, r2
+ 128 00fc 0300A0E1 		mov	r0, r3
+ 129 0100 FEFFFFEB 		bl	malloc
+ 130 0104 0030A0E1 		mov	r3, r0
+ 131 0108 14300BE5 		str	r3, [fp, #-20]
+  47:main.c        **** 
+  48:main.c        **** 	// read data as int16
+  49:main.c        **** 	int i;
+  50:main.c        **** 	int w;
+  51:main.c        **** 	for (i = 0, w = 0; i < filelen - header_size; i+=2, w++)
+ 132              		.loc 1 51 0
+ 133 010c 0030A0E3 		mov	r3, #0
+ 134 0110 10300BE5 		str	r3, [fp, #-16]
+ 135 0114 0030A0E3 		mov	r3, #0
+ 136 0118 0C300BE5 		str	r3, [fp, #-12]
+ 137 011c 240000EA 		b	.L2
+ 138              	.L3:
+  52:main.c        **** 	{
+  53:main.c        **** 		wav_data[w] = (int16_t)(data_start[i] & 0xff) ;
+ 139              		.loc 1 53 0
+ 140 0120 0C301BE5 		ldr	r3, [fp, #-12]
+ 141 0124 8320A0E1 		mov	r2, r3, asl #1
+ 142 0128 1C301BE5 		ldr	r3, [fp, #-28]
+ 143 012c 021083E0 		add	r1, r3, r2
+ 144 0130 10201BE5 		ldr	r2, [fp, #-16]
+ 145 0134 20301BE5 		ldr	r3, [fp, #-32]
+ 146 0138 023083E0 		add	r3, r3, r2
+ 147 013c 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 148 0140 B030C1E1 		strh	r3, [r1, #0]	@ movhi
+  54:main.c        **** 		wav_data[w] |= (data_start[i+1] << 8);
+ 149              		.loc 1 54 0
+ 150 0144 0C301BE5 		ldr	r3, [fp, #-12]
+ 151 0148 8320A0E1 		mov	r2, r3, asl #1
+ 152 014c 1C301BE5 		ldr	r3, [fp, #-28]
+ 153 0150 020083E0 		add	r0, r3, r2
+ 154 0154 0C301BE5 		ldr	r3, [fp, #-12]
+ 155 0158 8320A0E1 		mov	r2, r3, asl #1
+ 156 015c 1C301BE5 		ldr	r3, [fp, #-28]
+ 157 0160 023083E0 		add	r3, r3, r2
+ 158 0164 B010D3E1 		ldrh	r1, [r3, #0]
+ 159 0168 10301BE5 		ldr	r3, [fp, #-16]
+ 160 016c 012083E2 		add	r2, r3, #1
+ 161 0170 20301BE5 		ldr	r3, [fp, #-32]
+ 162 0174 023083E0 		add	r3, r3, r2
+ 163 0178 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 164 017c 0334A0E1 		mov	r3, r3, asl #8
+ 165 0180 0338A0E1 		mov	r3, r3, asl #16
+ 166 0184 2338A0E1 		mov	r3, r3, lsr #16
+ 167 0188 0120A0E1 		mov	r2, r1	@ movhi
+ 168 018c 033082E1 		orr	r3, r2, r3
+ 169 0190 0338A0E1 		mov	r3, r3, asl #16
+ 170 0194 2338A0E1 		mov	r3, r3, lsr #16
+ 171 0198 B030C0E1 		strh	r3, [r0, #0]	@ movhi
+ 172              		.loc 1 51 0
+ 173 019c 10301BE5 		ldr	r3, [fp, #-16]
+ 174 01a0 023083E2 		add	r3, r3, #2
+ 175 01a4 10300BE5 		str	r3, [fp, #-16]
+ 176 01a8 0C301BE5 		ldr	r3, [fp, #-12]
+ 177 01ac 013083E2 		add	r3, r3, #1
+ 178 01b0 0C300BE5 		str	r3, [fp, #-12]
+ 179              	.L2:
+ 180 01b4 10319FE5 		ldr	r3, .L5+8
+ 181 01b8 002093E5 		ldr	r2, [r3, #0]
+ 182 01bc 28301BE5 		ldr	r3, [fp, #-40]
+ 183 01c0 032062E0 		rsb	r2, r2, r3
+ 184 01c4 10301BE5 		ldr	r3, [fp, #-16]
+ 185 01c8 030052E1 		cmp	r2, r3
+ 186 01cc D3FFFFCA 		bgt	.L3
+  55:main.c        **** 	}
+  56:main.c        **** 
+  57:main.c        **** 
+  58:main.c        **** 	// compress data
+  59:main.c        **** 	compress_buffer(wav_data, compressed_data, (filelen - header_size)/2);
+ 187              		.loc 1 59 0
+ 188 01d0 F4309FE5 		ldr	r3, .L5+8
+ 189 01d4 002093E5 		ldr	r2, [r3, #0]
+ 190 01d8 28301BE5 		ldr	r3, [fp, #-40]
+ 191 01dc 032062E0 		rsb	r2, r2, r3
+ 192 01e0 A23FA0E1 		mov	r3, r2, lsr #31
+ 193 01e4 023083E0 		add	r3, r3, r2
+ 194 01e8 C330A0E1 		mov	r3, r3, asr #1
+ 195 01ec 1C001BE5 		ldr	r0, [fp, #-28]
+ 196 01f0 18101BE5 		ldr	r1, [fp, #-24]
+ 197 01f4 0320A0E1 		mov	r2, r3
+ 198 01f8 FEFFFFEB 		bl	compress_buffer
+  60:main.c        **** 	
+  61:main.c        **** 	// decompress
+  62:main.c        **** 	decompress_buffer(compressed_data, decompressed_data, (filelen - header_size)/2);	
+ 199              		.loc 1 62 0
+ 200 01fc C8309FE5 		ldr	r3, .L5+8
+ 201 0200 002093E5 		ldr	r2, [r3, #0]
+ 202 0204 28301BE5 		ldr	r3, [fp, #-40]
+ 203 0208 032062E0 		rsb	r2, r2, r3
+ 204 020c A23FA0E1 		mov	r3, r2, lsr #31
+ 205 0210 023083E0 		add	r3, r3, r2
+ 206 0214 C330A0E1 		mov	r3, r3, asr #1
+ 207 0218 18001BE5 		ldr	r0, [fp, #-24]
+ 208 021c 14101BE5 		ldr	r1, [fp, #-20]
+ 209 0220 0320A0E1 		mov	r2, r3
+ 210 0224 FEFFFFEB 		bl	decompress_buffer
+  63:main.c        **** 
+  64:main.c        **** 	// write to file
+  65:main.c        **** 	FILE* outfile = fopen("out.wav", "wb");
+ 211              		.loc 1 65 0
+ 212 0228 A0009FE5 		ldr	r0, .L5+12
+ 213 022c A0109FE5 		ldr	r1, .L5+16
+ 214 0230 FEFFFFEB 		bl	fopen
+ 215 0234 0030A0E1 		mov	r3, r0
+ 216 0238 08300BE5 		str	r3, [fp, #-8]
+  66:main.c        **** 
+  67:main.c        **** 	fwrite(buffer, 1, header_size, outfile);
+ 217              		.loc 1 67 0
+ 218 023c 88309FE5 		ldr	r3, .L5+8
+ 219 0240 003093E5 		ldr	r3, [r3, #0]
+ 220 0244 24001BE5 		ldr	r0, [fp, #-36]
+ 221 0248 0110A0E3 		mov	r1, #1
+ 222 024c 0320A0E1 		mov	r2, r3
+ 223 0250 08301BE5 		ldr	r3, [fp, #-8]
+ 224 0254 FEFFFFEB 		bl	fwrite
+  68:main.c        **** 	fwrite(decompressed_data, 2, (filelen - header_size)/2, outfile);
+ 225              		.loc 1 68 0
+ 226 0258 6C309FE5 		ldr	r3, .L5+8
+ 227 025c 002093E5 		ldr	r2, [r3, #0]
+ 228 0260 28301BE5 		ldr	r3, [fp, #-40]
+ 229 0264 032062E0 		rsb	r2, r2, r3
+ 230 0268 A23FA0E1 		mov	r3, r2, lsr #31
+ 231 026c 023083E0 		add	r3, r3, r2
+ 232 0270 C330A0E1 		mov	r3, r3, asr #1
+ 233 0274 14001BE5 		ldr	r0, [fp, #-20]
+ 234 0278 0210A0E3 		mov	r1, #2
+ 235 027c 0320A0E1 		mov	r2, r3
+ 236 0280 08301BE5 		ldr	r3, [fp, #-8]
+ 237 0284 FEFFFFEB 		bl	fwrite
+  69:main.c        **** 
+  70:main.c        **** 	// free memory
+  71:main.c        **** 	free(decompressed_data);
+ 238              		.loc 1 71 0
+ 239 0288 14001BE5 		ldr	r0, [fp, #-20]
+ 240 028c FEFFFFEB 		bl	free
+  72:main.c        **** 	free(compressed_data);	
+ 241              		.loc 1 72 0
+ 242 0290 18001BE5 		ldr	r0, [fp, #-24]
+ 243 0294 FEFFFFEB 		bl	free
+  73:main.c        **** 	free(wav_data);
+ 244              		.loc 1 73 0
+ 245 0298 1C001BE5 		ldr	r0, [fp, #-28]
+ 246 029c FEFFFFEB 		bl	free
+  74:main.c        **** 	free(buffer);
+ 247              		.loc 1 74 0
+ 248 02a0 24001BE5 		ldr	r0, [fp, #-36]
+ 249 02a4 FEFFFFEB 		bl	free
+  75:main.c        **** 
+  76:main.c        **** 	// close outfile
+  77:main.c        **** 	fclose(outfile);
+ 250              		.loc 1 77 0
+ 251 02a8 08001BE5 		ldr	r0, [fp, #-8]
+ 252 02ac FEFFFFEB 		bl	fclose
+  78:main.c        **** 
+  79:main.c        **** 	return 0;
+ 253              		.loc 1 79 0
+ 254 02b0 0030A0E3 		mov	r3, #0
+  80:main.c        **** }
+ 255              		.loc 1 80 0
+ 256 02b4 0300A0E1 		mov	r0, r3
+ 257 02b8 04D04BE2 		sub	sp, fp, #4
+ 258 02bc 0048BDE8 		ldmfd	sp!, {fp, lr}
+ 259 02c0 1EFF2FE1 		bx	lr
+ 260              	.L6:
+ 261              		.align	2
+ 262              	.L5:
+ 263 02c4 00000000 		.word	.LC0
+ 264 02c8 14000000 		.word	.LC1
+ 265 02cc 00000000 		.word	header_size
+ 266 02d0 18000000 		.word	.LC2
+ 267 02d4 20000000 		.word	.LC3
+ 268              	.LFE2:
+ 270              		.align	2
+ 271              		.global	pwlog2
+ 273              	pwlog2:
+ 274              	.LFB3:
+  81:main.c        **** 
+  82:main.c        **** int pwlog2(int x)
+  83:main.c        **** {
+ 275              		.loc 1 83 0
+ 276              		@ Function supports interworking.
+ 277              		@ args = 0, pretend = 0, frame = 8
+ 278              		@ frame_needed = 1, uses_anonymous_args = 0
+ 279              		@ link register save eliminated.
+ 280 02d8 04B02DE5 		str	fp, [sp, #-4]!
+ 281              	.LCFI3:
+ 282 02dc 00B08DE2 		add	fp, sp, #0
+ 283              	.LCFI4:
+ 284 02e0 0CD04DE2 		sub	sp, sp, #12
+ 285              	.LCFI5:
+ 286 02e4 08000BE5 		str	r0, [fp, #-8]
+  84:main.c        **** 	if (x < (1 << 4))
+ 287              		.loc 1 84 0
+ 288 02e8 08301BE5 		ldr	r3, [fp, #-8]
+ 289 02ec 0F0053E3 		cmp	r3, #15
+ 290 02f0 020000CA 		bgt	.L8
+  85:main.c        **** 		return x;
+ 291              		.loc 1 85 0
+ 292 02f4 08301BE5 		ldr	r3, [fp, #-8]
+ 293 02f8 0C300BE5 		str	r3, [fp, #-12]
+ 294 02fc 1D0000EA 		b	.L9
+ 295              	.L8:
+  86:main.c        **** 
+  87:main.c        **** 	if (x < (1 << 8))
+ 296              		.loc 1 87 0
+ 297 0300 08301BE5 		ldr	r3, [fp, #-8]
+ 298 0304 FF0053E3 		cmp	r3, #255
+ 299 0308 040000CA 		bgt	.L10
+  88:main.c        **** 		return (x >> 1) + (1 << 3);
+ 300              		.loc 1 88 0
+ 301 030c 08301BE5 		ldr	r3, [fp, #-8]
+ 302 0310 C330A0E1 		mov	r3, r3, asr #1
+ 303 0314 083083E2 		add	r3, r3, #8
+ 304 0318 0C300BE5 		str	r3, [fp, #-12]
+ 305 031c 150000EA 		b	.L9
+ 306              	.L10:
+  89:main.c        **** 	
+  90:main.c        **** 	if (x < (1 << 12))
+ 307              		.loc 1 90 0
+ 308 0320 08201BE5 		ldr	r2, [fp, #-8]
+ 309 0324 FF3EA0E3 		mov	r3, #4080
+ 310 0328 0F3083E2 		add	r3, r3, #15
+ 311 032c 030052E1 		cmp	r2, r3
+ 312 0330 040000CA 		bgt	.L11
+  91:main.c        **** 		return (x >> 3) + (1 << 7);
+ 313              		.loc 1 91 0
+ 314 0334 08301BE5 		ldr	r3, [fp, #-8]
+ 315 0338 C331A0E1 		mov	r3, r3, asr #3
+ 316 033c 803083E2 		add	r3, r3, #128
+ 317 0340 0C300BE5 		str	r3, [fp, #-12]
+ 318 0344 0B0000EA 		b	.L9
+ 319              	.L11:
+  92:main.c        **** 
+  93:main.c        **** 	if (x < (1 << 16))
+ 320              		.loc 1 93 0
+ 321 0348 08201BE5 		ldr	r2, [fp, #-8]
+ 322 034c 0138A0E3 		mov	r3, #65536
+ 323 0350 013043E2 		sub	r3, r3, #1
+ 324 0354 030052E1 		cmp	r2, r3
+ 325 0358 040000CA 		bgt	.L12
+  94:main.c        **** 		return (x >> 6) + (1 << 9);
+ 326              		.loc 1 94 0
+ 327 035c 08301BE5 		ldr	r3, [fp, #-8]
+ 328 0360 4333A0E1 		mov	r3, r3, asr #6
+ 329 0364 023C83E2 		add	r3, r3, #512
+ 330 0368 0C300BE5 		str	r3, [fp, #-12]
+ 331 036c 010000EA 		b	.L9
+ 332              	.L12:
+  95:main.c        **** 
+  96:main.c        **** 	return -1; // error
+ 333              		.loc 1 96 0
+ 334 0370 0030E0E3 		mvn	r3, #0
+ 335 0374 0C300BE5 		str	r3, [fp, #-12]
+ 336              	.L9:
+ 337 0378 0C301BE5 		ldr	r3, [fp, #-12]
+  97:main.c        **** }
+ 338              		.loc 1 97 0
+ 339 037c 0300A0E1 		mov	r0, r3
+ 340 0380 00D08BE2 		add	sp, fp, #0
+ 341 0384 0008BDE8 		ldmfd	sp!, {fp}
+ 342 0388 1EFF2FE1 		bx	lr
+ 343              	.LFE3:
+ 345              		.align	2
+ 346              		.global	inv_pwlog2
+ 348              	inv_pwlog2:
+ 349              	.LFB4:
+  98:main.c        **** 
+  99:main.c        **** int inv_pwlog2(int y)
+ 100:main.c        **** {
+ 350              		.loc 1 100 0
+ 351              		@ Function supports interworking.
+ 352              		@ args = 0, pretend = 0, frame = 8
+ 353              		@ frame_needed = 1, uses_anonymous_args = 0
+ 354              		@ link register save eliminated.
+ 355 038c 04B02DE5 		str	fp, [sp, #-4]!
+ 356              	.LCFI6:
+ 357 0390 00B08DE2 		add	fp, sp, #0
+ 358              	.LCFI7:
+ 359 0394 0CD04DE2 		sub	sp, sp, #12
+ 360              	.LCFI8:
+ 361 0398 08000BE5 		str	r0, [fp, #-8]
+ 101:main.c        **** 	if (y < (1 << 4))
+ 362              		.loc 1 101 0
+ 363 039c 08301BE5 		ldr	r3, [fp, #-8]
+ 364 03a0 0F0053E3 		cmp	r3, #15
+ 365 03a4 020000CA 		bgt	.L15
+ 102:main.c        **** 		return y;
+ 366              		.loc 1 102 0
+ 367 03a8 08301BE5 		ldr	r3, [fp, #-8]
+ 368 03ac 0C300BE5 		str	r3, [fp, #-12]
+ 369 03b0 1D0000EA 		b	.L16
+ 370              	.L15:
+ 103:main.c        **** 
+ 104:main.c        **** 	if (y < (1 << 3) + (1 << 7))
+ 371              		.loc 1 104 0
+ 372 03b4 08301BE5 		ldr	r3, [fp, #-8]
+ 373 03b8 870053E3 		cmp	r3, #135
+ 374 03bc 040000CA 		bgt	.L17
+ 105:main.c        **** 		return (y - (1 << 3)) << 1;
+ 375              		.loc 1 105 0
+ 376 03c0 08301BE5 		ldr	r3, [fp, #-8]
+ 377 03c4 083043E2 		sub	r3, r3, #8
+ 378 03c8 8330A0E1 		mov	r3, r3, asl #1
+ 379 03cc 0C300BE5 		str	r3, [fp, #-12]
+ 380 03d0 150000EA 		b	.L16
+ 381              	.L17:
+ 106:main.c        **** 
+ 107:main.c        **** 	if (y < (1 << 7) + (1 << 9))
+ 382              		.loc 1 107 0
+ 383 03d4 08201BE5 		ldr	r2, [fp, #-8]
+ 384 03d8 9F3FA0E3 		mov	r3, #636
+ 385 03dc 033083E2 		add	r3, r3, #3
+ 386 03e0 030052E1 		cmp	r2, r3
+ 387 03e4 040000CA 		bgt	.L18
+ 108:main.c        **** 		return (y - (1 << 7)) << 3;
+ 388              		.loc 1 108 0
+ 389 03e8 08301BE5 		ldr	r3, [fp, #-8]
+ 390 03ec 803043E2 		sub	r3, r3, #128
+ 391 03f0 8331A0E1 		mov	r3, r3, asl #3
+ 392 03f4 0C300BE5 		str	r3, [fp, #-12]
+ 393 03f8 0B0000EA 		b	.L16
+ 394              	.L18:
+ 109:main.c        **** 
+ 110:main.c        **** 	if (y < (1 << 10))
+ 395              		.loc 1 110 0
+ 396 03fc 08201BE5 		ldr	r2, [fp, #-8]
+ 397 0400 FF3FA0E3 		mov	r3, #1020
+ 398 0404 033083E2 		add	r3, r3, #3
+ 399 0408 030052E1 		cmp	r2, r3
+ 400 040c 040000CA 		bgt	.L19
+ 111:main.c        **** 		return (y - (1 << 9)) << 6;
+ 401              		.loc 1 111 0
+ 402 0410 08301BE5 		ldr	r3, [fp, #-8]
+ 403 0414 023C43E2 		sub	r3, r3, #512
+ 404 0418 0333A0E1 		mov	r3, r3, asl #6
+ 405 041c 0C300BE5 		str	r3, [fp, #-12]
+ 406 0420 010000EA 		b	.L16
+ 407              	.L19:
+ 112:main.c        **** 
+ 113:main.c        **** 	return -1; // error
+ 408              		.loc 1 113 0
+ 409 0424 0030E0E3 		mvn	r3, #0
+ 410 0428 0C300BE5 		str	r3, [fp, #-12]
+ 411              	.L16:
+ 412 042c 0C301BE5 		ldr	r3, [fp, #-12]
+ 114:main.c        **** }
+ 413              		.loc 1 114 0
+ 414 0430 0300A0E1 		mov	r0, r3
+ 415 0434 00D08BE2 		add	sp, fp, #0
+ 416 0438 0008BDE8 		ldmfd	sp!, {fp}
+ 417 043c 1EFF2FE1 		bx	lr
+ 418              	.LFE4:
+ 420              		.align	2
+ 421              		.global	compress_buffer
+ 423              	compress_buffer:
+ 424              	.LFB5:
+ 115:main.c        **** 
+ 116:main.c        **** 
+ 117:main.c        **** void compress_buffer(int16_t * src, int16_t * dst, int len)
+ 118:main.c        **** {
+ 425              		.loc 1 118 0
+ 426              		@ Function supports interworking.
+ 427              		@ args = 0, pretend = 0, frame = 48
+ 428              		@ frame_needed = 1, uses_anonymous_args = 0
+ 429 0440 10482DE9 		stmfd	sp!, {r4, fp, lr}
+ 430              	.LCFI9:
+ 431 0444 08B08DE2 		add	fp, sp, #8
+ 432              	.LCFI10:
+ 433 0448 34D04DE2 		sub	sp, sp, #52
+ 434              	.LCFI11:
+ 435 044c 30000BE5 		str	r0, [fp, #-48]
+ 436 0450 34100BE5 		str	r1, [fp, #-52]
+ 437 0454 38200BE5 		str	r2, [fp, #-56]
+ 119:main.c        **** 	int i = len - 1;
+ 438              		.loc 1 119 0
+ 439 0458 38301BE5 		ldr	r3, [fp, #-56]
+ 440 045c 013043E2 		sub	r3, r3, #1
+ 441 0460 2C300BE5 		str	r3, [fp, #-44]
+ 120:main.c        **** 
+ 121:main.c        **** 	// loop unrolling case
+ 122:main.c        **** 	if (!(len%2))
+ 442              		.loc 1 122 0
+ 443 0464 38301BE5 		ldr	r3, [fp, #-56]
+ 444 0468 013003E2 		and	r3, r3, #1
+ 445 046c 000053E3 		cmp	r3, #0
+ 446 0470 9600001A 		bne	.L26
+ 447              	.LBB2:
+ 123:main.c        **** 	{
+ 124:main.c        **** 		int16_t x = src[i];
+ 448              		.loc 1 124 0
+ 449 0474 2C301BE5 		ldr	r3, [fp, #-44]
+ 450 0478 8320A0E1 		mov	r2, r3, asl #1
+ 451 047c 30301BE5 		ldr	r3, [fp, #-48]
+ 452 0480 023083E0 		add	r3, r3, r2
+ 453 0484 B030D3E1 		ldrh	r3, [r3, #0]	@ movhi
+ 454 0488 BE314BE1 		strh	r3, [fp, #-30]	@ movhi
+ 125:main.c        **** 		int sign = 0;
+ 455              		.loc 1 125 0
+ 456 048c 0030A0E3 		mov	r3, #0
+ 457 0490 1C300BE5 		str	r3, [fp, #-28]
+ 126:main.c        **** 
+ 127:main.c        **** 		if (x & 0x8000)
+ 458              		.loc 1 127 0
+ 459 0494 FE315BE1 		ldrsh	r3, [fp, #-30]
+ 460 0498 000053E3 		cmp	r3, #0
+ 461 049c 050000AA 		bge	.L23
+ 128:main.c        **** 		{
+ 129:main.c        **** 			x = -x;
+ 462              		.loc 1 129 0
+ 463 04a0 BE315BE1 		ldrh	r3, [fp, #-30]	@ movhi
+ 464 04a4 003063E2 		rsb	r3, r3, #0
+ 465 04a8 BE314BE1 		strh	r3, [fp, #-30]	@ movhi
+ 130:main.c        **** 			++sign;
+ 466              		.loc 1 130 0
+ 467 04ac 1C301BE5 		ldr	r3, [fp, #-28]
+ 468 04b0 013083E2 		add	r3, r3, #1
+ 469 04b4 1C300BE5 		str	r3, [fp, #-28]
+ 470              	.L23:
+ 131:main.c        **** 		}
+ 132:main.c        **** 
+ 133:main.c        **** 		if (sign)
+ 471              		.loc 1 133 0
+ 472 04b8 1C301BE5 		ldr	r3, [fp, #-28]
+ 473 04bc 000053E3 		cmp	r3, #0
+ 474 04c0 0E00000A 		beq	.L24
+ 134:main.c        **** 			dst[i] = -pwlog2(x);
+ 475              		.loc 1 134 0
+ 476 04c4 2C301BE5 		ldr	r3, [fp, #-44]
+ 477 04c8 8320A0E1 		mov	r2, r3, asl #1
+ 478 04cc 34301BE5 		ldr	r3, [fp, #-52]
+ 479 04d0 024083E0 		add	r4, r3, r2
+ 480 04d4 FE315BE1 		ldrsh	r3, [fp, #-30]
+ 481 04d8 0300A0E1 		mov	r0, r3
+ 482 04dc FEFFFFEB 		bl	pwlog2
+ 483 04e0 0030A0E1 		mov	r3, r0
+ 484 04e4 0338A0E1 		mov	r3, r3, asl #16
+ 485 04e8 2338A0E1 		mov	r3, r3, lsr #16
+ 486 04ec 003063E2 		rsb	r3, r3, #0
+ 487 04f0 0338A0E1 		mov	r3, r3, asl #16
+ 488 04f4 2338A0E1 		mov	r3, r3, lsr #16
+ 489 04f8 B030C4E1 		strh	r3, [r4, #0]	@ movhi
+ 490 04fc 0A0000EA 		b	.L25
+ 491              	.L24:
+ 135:main.c        **** 		else
+ 136:main.c        **** 			dst[i] = pwlog2(x);	
+ 492              		.loc 1 136 0
+ 493 0500 2C301BE5 		ldr	r3, [fp, #-44]
+ 494 0504 8320A0E1 		mov	r2, r3, asl #1
+ 495 0508 34301BE5 		ldr	r3, [fp, #-52]
+ 496 050c 024083E0 		add	r4, r3, r2
+ 497 0510 FE315BE1 		ldrsh	r3, [fp, #-30]
+ 498 0514 0300A0E1 		mov	r0, r3
+ 499 0518 FEFFFFEB 		bl	pwlog2
+ 500 051c 0030A0E1 		mov	r3, r0
+ 501 0520 0338A0E1 		mov	r3, r3, asl #16
+ 502 0524 2338A0E1 		mov	r3, r3, lsr #16
+ 503 0528 B030C4E1 		strh	r3, [r4, #0]	@ movhi
+ 504              	.L25:
+ 137:main.c        **** 
+ 138:main.c        **** 		--i;
+ 505              		.loc 1 138 0
+ 506 052c 2C301BE5 		ldr	r3, [fp, #-44]
+ 507 0530 013043E2 		sub	r3, r3, #1
+ 508 0534 2C300BE5 		str	r3, [fp, #-44]
+ 509 0538 640000EA 		b	.L26
+ 510              	.L33:
+ 511              	.LBE2:
+ 512              	.LBB3:
+ 139:main.c        **** 	}
+ 140:main.c        **** 
+ 141:main.c        **** 	// optimize for loop conditions
+ 142:main.c        **** 	for (; i; i-=2)
+ 143:main.c        **** 	{
+ 144:main.c        **** 		// unroll loop once, paralize to reduce data dependencies
+ 145:main.c        **** 		int16_t x1 = src[i];
+ 513              		.loc 1 145 0
+ 514 053c 2C301BE5 		ldr	r3, [fp, #-44]
+ 515 0540 8320A0E1 		mov	r2, r3, asl #1
+ 516 0544 30301BE5 		ldr	r3, [fp, #-48]
+ 517 0548 023083E0 		add	r3, r3, r2
+ 518 054c B030D3E1 		ldrh	r3, [r3, #0]	@ movhi
+ 519 0550 B8314BE1 		strh	r3, [fp, #-24]	@ movhi
+ 146:main.c        **** 		int16_t x2 = src[i - 1];
+ 520              		.loc 1 146 0
+ 521 0554 2C301BE5 		ldr	r3, [fp, #-44]
+ 522 0558 013063E2 		rsb	r3, r3, #1
+ 523 055c 8330A0E1 		mov	r3, r3, asl #1
+ 524 0560 002063E2 		rsb	r2, r3, #0
+ 525 0564 30301BE5 		ldr	r3, [fp, #-48]
+ 526 0568 023083E0 		add	r3, r3, r2
+ 527 056c B030D3E1 		ldrh	r3, [r3, #0]	@ movhi
+ 528 0570 B6314BE1 		strh	r3, [fp, #-22]	@ movhi
+ 147:main.c        **** 
+ 148:main.c        **** 		int sign1 = 0;
+ 529              		.loc 1 148 0
+ 530 0574 0030A0E3 		mov	r3, #0
+ 531 0578 14300BE5 		str	r3, [fp, #-20]
+ 149:main.c        **** 		int sign2 = 0;
+ 532              		.loc 1 149 0
+ 533 057c 0030A0E3 		mov	r3, #0
+ 534 0580 10300BE5 		str	r3, [fp, #-16]
+ 150:main.c        **** 
+ 151:main.c        **** 		// check sign bit (two's complement signed integer)
+ 152:main.c        **** 		if (x1 & 0x8000)
+ 535              		.loc 1 152 0
+ 536 0584 F8315BE1 		ldrsh	r3, [fp, #-24]
+ 537 0588 000053E3 		cmp	r3, #0
+ 538 058c 050000AA 		bge	.L27
+ 153:main.c        **** 		{
+ 154:main.c        **** 			x1 = -x1;
+ 539              		.loc 1 154 0
+ 540 0590 B8315BE1 		ldrh	r3, [fp, #-24]	@ movhi
+ 541 0594 003063E2 		rsb	r3, r3, #0
+ 542 0598 B8314BE1 		strh	r3, [fp, #-24]	@ movhi
+ 155:main.c        **** 			++sign1;
+ 543              		.loc 1 155 0
+ 544 059c 14301BE5 		ldr	r3, [fp, #-20]
+ 545 05a0 013083E2 		add	r3, r3, #1
+ 546 05a4 14300BE5 		str	r3, [fp, #-20]
+ 547              	.L27:
+ 156:main.c        **** 		}
+ 157:main.c        **** 		
+ 158:main.c        **** 		if (x2 & 0x8000)
+ 548              		.loc 1 158 0
+ 549 05a8 F6315BE1 		ldrsh	r3, [fp, #-22]
+ 550 05ac 000053E3 		cmp	r3, #0
+ 551 05b0 050000AA 		bge	.L28
+ 159:main.c        **** 		{
+ 160:main.c        **** 			x2 = -x2;
+ 552              		.loc 1 160 0
+ 553 05b4 B6315BE1 		ldrh	r3, [fp, #-22]	@ movhi
+ 554 05b8 003063E2 		rsb	r3, r3, #0
+ 555 05bc B6314BE1 		strh	r3, [fp, #-22]	@ movhi
+ 161:main.c        **** 			++sign2;
+ 556              		.loc 1 161 0
+ 557 05c0 10301BE5 		ldr	r3, [fp, #-16]
+ 558 05c4 013083E2 		add	r3, r3, #1
+ 559 05c8 10300BE5 		str	r3, [fp, #-16]
+ 560              	.L28:
+ 162:main.c        **** 		}
+ 163:main.c        **** 
+ 164:main.c        **** 		if (sign1)
+ 561              		.loc 1 164 0
+ 562 05cc 14301BE5 		ldr	r3, [fp, #-20]
+ 563 05d0 000053E3 		cmp	r3, #0
+ 564 05d4 0E00000A 		beq	.L29
+ 165:main.c        **** 			dst[i] = -pwlog2(x1);		
+ 565              		.loc 1 165 0
+ 566 05d8 2C301BE5 		ldr	r3, [fp, #-44]
+ 567 05dc 8320A0E1 		mov	r2, r3, asl #1
+ 568 05e0 34301BE5 		ldr	r3, [fp, #-52]
+ 569 05e4 024083E0 		add	r4, r3, r2
+ 570 05e8 F8315BE1 		ldrsh	r3, [fp, #-24]
+ 571 05ec 0300A0E1 		mov	r0, r3
+ 572 05f0 FEFFFFEB 		bl	pwlog2
+ 573 05f4 0030A0E1 		mov	r3, r0
+ 574 05f8 0338A0E1 		mov	r3, r3, asl #16
+ 575 05fc 2338A0E1 		mov	r3, r3, lsr #16
+ 576 0600 003063E2 		rsb	r3, r3, #0
+ 577 0604 0338A0E1 		mov	r3, r3, asl #16
+ 578 0608 2338A0E1 		mov	r3, r3, lsr #16
+ 579 060c B030C4E1 		strh	r3, [r4, #0]	@ movhi
+ 580 0610 0A0000EA 		b	.L30
+ 581              	.L29:
+ 166:main.c        **** 		else
+ 167:main.c        **** 			dst[i] = pwlog2(x1);
+ 582              		.loc 1 167 0
+ 583 0614 2C301BE5 		ldr	r3, [fp, #-44]
+ 584 0618 8320A0E1 		mov	r2, r3, asl #1
+ 585 061c 34301BE5 		ldr	r3, [fp, #-52]
+ 586 0620 024083E0 		add	r4, r3, r2
+ 587 0624 F8315BE1 		ldrsh	r3, [fp, #-24]
+ 588 0628 0300A0E1 		mov	r0, r3
+ 589 062c FEFFFFEB 		bl	pwlog2
+ 590 0630 0030A0E1 		mov	r3, r0
+ 591 0634 0338A0E1 		mov	r3, r3, asl #16
+ 592 0638 2338A0E1 		mov	r3, r3, lsr #16
+ 593 063c B030C4E1 		strh	r3, [r4, #0]	@ movhi
+ 594              	.L30:
+ 168:main.c        **** 
+ 169:main.c        **** 		if (sign2)
+ 595              		.loc 1 169 0
+ 596 0640 10301BE5 		ldr	r3, [fp, #-16]
+ 597 0644 000053E3 		cmp	r3, #0
+ 598 0648 1000000A 		beq	.L31
+ 170:main.c        **** 			dst[i - 1] = -pwlog2(x2);
+ 599              		.loc 1 170 0
+ 600 064c 2C301BE5 		ldr	r3, [fp, #-44]
+ 601 0650 013063E2 		rsb	r3, r3, #1
+ 602 0654 8330A0E1 		mov	r3, r3, asl #1
+ 603 0658 002063E2 		rsb	r2, r3, #0
+ 604 065c 34301BE5 		ldr	r3, [fp, #-52]
+ 605 0660 024083E0 		add	r4, r3, r2
+ 606 0664 F6315BE1 		ldrsh	r3, [fp, #-22]
+ 607 0668 0300A0E1 		mov	r0, r3
+ 608 066c FEFFFFEB 		bl	pwlog2
+ 609 0670 0030A0E1 		mov	r3, r0
+ 610 0674 0338A0E1 		mov	r3, r3, asl #16
+ 611 0678 2338A0E1 		mov	r3, r3, lsr #16
+ 612 067c 003063E2 		rsb	r3, r3, #0
+ 613 0680 0338A0E1 		mov	r3, r3, asl #16
+ 614 0684 2338A0E1 		mov	r3, r3, lsr #16
+ 615 0688 B030C4E1 		strh	r3, [r4, #0]	@ movhi
+ 616 068c 0C0000EA 		b	.L32
+ 617              	.L31:
+ 171:main.c        **** 		else
+ 172:main.c        **** 			dst[i - 1] = pwlog2(x2);
+ 618              		.loc 1 172 0
+ 619 0690 2C301BE5 		ldr	r3, [fp, #-44]
+ 620 0694 013063E2 		rsb	r3, r3, #1
+ 621 0698 8330A0E1 		mov	r3, r3, asl #1
+ 622 069c 002063E2 		rsb	r2, r3, #0
+ 623 06a0 34301BE5 		ldr	r3, [fp, #-52]
+ 624 06a4 024083E0 		add	r4, r3, r2
+ 625 06a8 F6315BE1 		ldrsh	r3, [fp, #-22]
+ 626 06ac 0300A0E1 		mov	r0, r3
+ 627 06b0 FEFFFFEB 		bl	pwlog2
+ 628 06b4 0030A0E1 		mov	r3, r0
+ 629 06b8 0338A0E1 		mov	r3, r3, asl #16
+ 630 06bc 2338A0E1 		mov	r3, r3, lsr #16
+ 631 06c0 B030C4E1 		strh	r3, [r4, #0]	@ movhi
+ 632              	.L32:
+ 633              	.LBE3:
+ 634              		.loc 1 142 0
+ 635 06c4 2C301BE5 		ldr	r3, [fp, #-44]
+ 636 06c8 023043E2 		sub	r3, r3, #2
+ 637 06cc 2C300BE5 		str	r3, [fp, #-44]
+ 638              	.L26:
+ 639 06d0 2C301BE5 		ldr	r3, [fp, #-44]
+ 640 06d4 000053E3 		cmp	r3, #0
+ 641 06d8 97FFFF1A 		bne	.L33
+ 173:main.c        **** 	}
+ 174:main.c        **** 	// handle i = 0
+ 175:main.c        **** 	int16_t x = src[0];
+ 642              		.loc 1 175 0
+ 643 06dc 30301BE5 		ldr	r3, [fp, #-48]
+ 644 06e0 B030D3E1 		ldrh	r3, [r3, #0]	@ movhi
+ 645 06e4 B6324BE1 		strh	r3, [fp, #-38]	@ movhi
+ 176:main.c        **** 	int sign = 0;
+ 646              		.loc 1 176 0
+ 647 06e8 0030A0E3 		mov	r3, #0
+ 648 06ec 24300BE5 		str	r3, [fp, #-36]
+ 177:main.c        **** 
+ 178:main.c        **** 	if (x & 0x8000)
+ 649              		.loc 1 178 0
+ 650 06f0 F6325BE1 		ldrsh	r3, [fp, #-38]
+ 651 06f4 000053E3 		cmp	r3, #0
+ 652 06f8 050000AA 		bge	.L34
+ 179:main.c        **** 	{
+ 180:main.c        **** 		x = -x;
+ 653              		.loc 1 180 0
+ 654 06fc B6325BE1 		ldrh	r3, [fp, #-38]	@ movhi
+ 655 0700 003063E2 		rsb	r3, r3, #0
+ 656 0704 B6324BE1 		strh	r3, [fp, #-38]	@ movhi
+ 181:main.c        **** 		++sign;
+ 657              		.loc 1 181 0
+ 658 0708 24301BE5 		ldr	r3, [fp, #-36]
+ 659 070c 013083E2 		add	r3, r3, #1
+ 660 0710 24300BE5 		str	r3, [fp, #-36]
+ 661              	.L34:
+ 182:main.c        **** 	}
+ 183:main.c        **** 
+ 184:main.c        **** 	if (sign)
+ 662              		.loc 1 184 0
+ 663 0714 24301BE5 		ldr	r3, [fp, #-36]
+ 664 0718 000053E3 		cmp	r3, #0
+ 665 071c 0B00000A 		beq	.L35
+ 185:main.c        **** 		dst[0] = -pwlog2(x);
+ 666              		.loc 1 185 0
+ 667 0720 F6325BE1 		ldrsh	r3, [fp, #-38]
+ 668 0724 0300A0E1 		mov	r0, r3
+ 669 0728 FEFFFFEB 		bl	pwlog2
+ 670 072c 0030A0E1 		mov	r3, r0
+ 671 0730 0338A0E1 		mov	r3, r3, asl #16
+ 672 0734 2338A0E1 		mov	r3, r3, lsr #16
+ 673 0738 003063E2 		rsb	r3, r3, #0
+ 674 073c 0338A0E1 		mov	r3, r3, asl #16
+ 675 0740 2328A0E1 		mov	r2, r3, lsr #16
+ 676 0744 34301BE5 		ldr	r3, [fp, #-52]
+ 677 0748 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 678 074c 070000EA 		b	.L37
+ 679              	.L35:
+ 186:main.c        **** 	else
+ 187:main.c        **** 		dst[0] = pwlog2(x);	
+ 680              		.loc 1 187 0
+ 681 0750 F6325BE1 		ldrsh	r3, [fp, #-38]
+ 682 0754 0300A0E1 		mov	r0, r3
+ 683 0758 FEFFFFEB 		bl	pwlog2
+ 684 075c 0030A0E1 		mov	r3, r0
+ 685 0760 0338A0E1 		mov	r3, r3, asl #16
+ 686 0764 2328A0E1 		mov	r2, r3, lsr #16
+ 687 0768 34301BE5 		ldr	r3, [fp, #-52]
+ 688 076c B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 689              	.L37:
+ 188:main.c        **** }
+ 690              		.loc 1 188 0
+ 691 0770 08D04BE2 		sub	sp, fp, #8
+ 692 0774 1048BDE8 		ldmfd	sp!, {r4, fp, lr}
+ 693 0778 1EFF2FE1 		bx	lr
+ 694              	.LFE5:
+ 696              		.align	2
+ 697              		.global	decompress_buffer
+ 699              	decompress_buffer:
+ 700              	.LFB6:
+ 189:main.c        **** 
+ 190:main.c        **** void decompress_buffer(int16_t * src, int16_t * dst, int len)
+ 191:main.c        **** {
+ 701              		.loc 1 191 0
+ 702              		@ Function supports interworking.
+ 703              		@ args = 0, pretend = 0, frame = 48
+ 704              		@ frame_needed = 1, uses_anonymous_args = 0
+ 705 077c 10482DE9 		stmfd	sp!, {r4, fp, lr}
+ 706              	.LCFI12:
+ 707 0780 08B08DE2 		add	fp, sp, #8
+ 708              	.LCFI13:
+ 709 0784 34D04DE2 		sub	sp, sp, #52
+ 710              	.LCFI14:
+ 711 0788 30000BE5 		str	r0, [fp, #-48]
+ 712 078c 34100BE5 		str	r1, [fp, #-52]
+ 713 0790 38200BE5 		str	r2, [fp, #-56]
+ 192:main.c        **** 	int i = len - 1;
+ 714              		.loc 1 192 0
+ 715 0794 38301BE5 		ldr	r3, [fp, #-56]
+ 716 0798 013043E2 		sub	r3, r3, #1
+ 717 079c 2C300BE5 		str	r3, [fp, #-44]
+ 193:main.c        **** 
+ 194:main.c        **** 	if (!(len%2))
+ 718              		.loc 1 194 0
+ 719 07a0 38301BE5 		ldr	r3, [fp, #-56]
+ 720 07a4 013003E2 		and	r3, r3, #1
+ 721 07a8 000053E3 		cmp	r3, #0
+ 722 07ac 8A00001A 		bne	.L43
+ 723              	.LBB4:
+ 195:main.c        **** 	{
+ 196:main.c        **** 		int16_t y = src[0];
+ 724              		.loc 1 196 0
+ 725 07b0 30301BE5 		ldr	r3, [fp, #-48]
+ 726 07b4 B030D3E1 		ldrh	r3, [r3, #0]	@ movhi
+ 727 07b8 BE314BE1 		strh	r3, [fp, #-30]	@ movhi
+ 197:main.c        **** 		int sign = 0;
+ 728              		.loc 1 197 0
+ 729 07bc 0030A0E3 		mov	r3, #0
+ 730 07c0 1C300BE5 		str	r3, [fp, #-28]
+ 198:main.c        **** 
+ 199:main.c        **** 		if (y & 0x8000)
+ 731              		.loc 1 199 0
+ 732 07c4 FE315BE1 		ldrsh	r3, [fp, #-30]
+ 733 07c8 000053E3 		cmp	r3, #0
+ 734 07cc 050000AA 		bge	.L40
+ 200:main.c        **** 		{
+ 201:main.c        **** 			y = -y;
+ 735              		.loc 1 201 0
+ 736 07d0 BE315BE1 		ldrh	r3, [fp, #-30]	@ movhi
+ 737 07d4 003063E2 		rsb	r3, r3, #0
+ 738 07d8 BE314BE1 		strh	r3, [fp, #-30]	@ movhi
+ 202:main.c        **** 			++sign;
+ 739              		.loc 1 202 0
+ 740 07dc 1C301BE5 		ldr	r3, [fp, #-28]
+ 741 07e0 013083E2 		add	r3, r3, #1
+ 742 07e4 1C300BE5 		str	r3, [fp, #-28]
+ 743              	.L40:
+ 203:main.c        **** 		}
+ 204:main.c        **** 
+ 205:main.c        **** 		if (sign)
+ 744              		.loc 1 205 0
+ 745 07e8 1C301BE5 		ldr	r3, [fp, #-28]
+ 746 07ec 000053E3 		cmp	r3, #0
+ 747 07f0 0B00000A 		beq	.L41
+ 206:main.c        **** 			dst[0] = -inv_pwlog2(y);
+ 748              		.loc 1 206 0
+ 749 07f4 FE315BE1 		ldrsh	r3, [fp, #-30]
+ 750 07f8 0300A0E1 		mov	r0, r3
+ 751 07fc FEFFFFEB 		bl	inv_pwlog2
+ 752 0800 0030A0E1 		mov	r3, r0
+ 753 0804 0338A0E1 		mov	r3, r3, asl #16
+ 754 0808 2338A0E1 		mov	r3, r3, lsr #16
+ 755 080c 003063E2 		rsb	r3, r3, #0
+ 756 0810 0338A0E1 		mov	r3, r3, asl #16
+ 757 0814 2328A0E1 		mov	r2, r3, lsr #16
+ 758 0818 34301BE5 		ldr	r3, [fp, #-52]
+ 759 081c B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 760 0820 070000EA 		b	.L42
+ 761              	.L41:
+ 207:main.c        **** 		else
+ 208:main.c        **** 			dst[0] = inv_pwlog2(y);
+ 762              		.loc 1 208 0
+ 763 0824 FE315BE1 		ldrsh	r3, [fp, #-30]
+ 764 0828 0300A0E1 		mov	r0, r3
+ 765 082c FEFFFFEB 		bl	inv_pwlog2
+ 766 0830 0030A0E1 		mov	r3, r0
+ 767 0834 0338A0E1 		mov	r3, r3, asl #16
+ 768 0838 2328A0E1 		mov	r2, r3, lsr #16
+ 769 083c 34301BE5 		ldr	r3, [fp, #-52]
+ 770 0840 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 771              	.L42:
+ 209:main.c        **** 		--i;
+ 772              		.loc 1 209 0
+ 773 0844 2C301BE5 		ldr	r3, [fp, #-44]
+ 774 0848 013043E2 		sub	r3, r3, #1
+ 775 084c 2C300BE5 		str	r3, [fp, #-44]
+ 776 0850 610000EA 		b	.L43
+ 777              	.L50:
+ 778              	.LBE4:
+ 779              	.LBB5:
+ 210:main.c        **** 	}
+ 211:main.c        **** 	for (; i; i-=2)
+ 212:main.c        **** 	{
+ 213:main.c        **** 		int sign1 = 0;
+ 780              		.loc 1 213 0
+ 781 0854 0030A0E3 		mov	r3, #0
+ 782 0858 18300BE5 		str	r3, [fp, #-24]
+ 214:main.c        **** 		int sign2 = 0;
+ 783              		.loc 1 214 0
+ 784 085c 0030A0E3 		mov	r3, #0
+ 785 0860 14300BE5 		str	r3, [fp, #-20]
+ 215:main.c        **** 		
+ 216:main.c        **** 		int16_t y1 = src[i];	
+ 786              		.loc 1 216 0
+ 787 0864 2C301BE5 		ldr	r3, [fp, #-44]
+ 788 0868 8320A0E1 		mov	r2, r3, asl #1
+ 789 086c 30301BE5 		ldr	r3, [fp, #-48]
+ 790 0870 023083E0 		add	r3, r3, r2
+ 791 0874 B030D3E1 		ldrh	r3, [r3, #0]	@ movhi
+ 792 0878 B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 217:main.c        **** 		int16_t y2 = src[i - 1];
+ 793              		.loc 1 217 0
+ 794 087c 2C301BE5 		ldr	r3, [fp, #-44]
+ 795 0880 013063E2 		rsb	r3, r3, #1
+ 796 0884 8330A0E1 		mov	r3, r3, asl #1
+ 797 0888 002063E2 		rsb	r2, r3, #0
+ 798 088c 30301BE5 		ldr	r3, [fp, #-48]
+ 799 0890 023083E0 		add	r3, r3, r2
+ 800 0894 B030D3E1 		ldrh	r3, [r3, #0]	@ movhi
+ 801 0898 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 218:main.c        **** 
+ 219:main.c        **** 		if (y1 & 0x8000)
+ 802              		.loc 1 219 0
+ 803 089c F0315BE1 		ldrsh	r3, [fp, #-16]
+ 804 08a0 000053E3 		cmp	r3, #0
+ 805 08a4 050000AA 		bge	.L44
+ 220:main.c        **** 		{
+ 221:main.c        **** 			y1 = -y1;
+ 806              		.loc 1 221 0
+ 807 08a8 B0315BE1 		ldrh	r3, [fp, #-16]	@ movhi
+ 808 08ac 003063E2 		rsb	r3, r3, #0
+ 809 08b0 B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 222:main.c        **** 			++sign1;
+ 810              		.loc 1 222 0
+ 811 08b4 18301BE5 		ldr	r3, [fp, #-24]
+ 812 08b8 013083E2 		add	r3, r3, #1
+ 813 08bc 18300BE5 		str	r3, [fp, #-24]
+ 814              	.L44:
+ 223:main.c        **** 		}
+ 224:main.c        **** 
+ 225:main.c        **** 		if (y2 & 0x8000)
+ 815              		.loc 1 225 0
+ 816 08c0 FE305BE1 		ldrsh	r3, [fp, #-14]
+ 817 08c4 000053E3 		cmp	r3, #0
+ 818 08c8 020000AA 		bge	.L45
+ 226:main.c        **** 		{
+ 227:main.c        **** 			y2 = y2;
+ 228:main.c        **** 			++sign2;
+ 819              		.loc 1 228 0
+ 820 08cc 14301BE5 		ldr	r3, [fp, #-20]
+ 821 08d0 013083E2 		add	r3, r3, #1
+ 822 08d4 14300BE5 		str	r3, [fp, #-20]
+ 823              	.L45:
+ 229:main.c        **** 		}
+ 230:main.c        **** 
+ 231:main.c        **** 		if (sign1)
+ 824              		.loc 1 231 0
+ 825 08d8 18301BE5 		ldr	r3, [fp, #-24]
+ 826 08dc 000053E3 		cmp	r3, #0
+ 827 08e0 0E00000A 		beq	.L46
+ 232:main.c        **** 			dst[i] = -inv_pwlog2(y1);
+ 828              		.loc 1 232 0
+ 829 08e4 2C301BE5 		ldr	r3, [fp, #-44]
+ 830 08e8 8320A0E1 		mov	r2, r3, asl #1
+ 831 08ec 34301BE5 		ldr	r3, [fp, #-52]
+ 832 08f0 024083E0 		add	r4, r3, r2
+ 833 08f4 F0315BE1 		ldrsh	r3, [fp, #-16]
+ 834 08f8 0300A0E1 		mov	r0, r3
+ 835 08fc FEFFFFEB 		bl	inv_pwlog2
+ 836 0900 0030A0E1 		mov	r3, r0
+ 837 0904 0338A0E1 		mov	r3, r3, asl #16
+ 838 0908 2338A0E1 		mov	r3, r3, lsr #16
+ 839 090c 003063E2 		rsb	r3, r3, #0
+ 840 0910 0338A0E1 		mov	r3, r3, asl #16
+ 841 0914 2338A0E1 		mov	r3, r3, lsr #16
+ 842 0918 B030C4E1 		strh	r3, [r4, #0]	@ movhi
+ 843 091c 0A0000EA 		b	.L47
+ 844              	.L46:
+ 233:main.c        **** 		else 
+ 234:main.c        **** 			dst[i] = inv_pwlog2(y1);
+ 845              		.loc 1 234 0
+ 846 0920 2C301BE5 		ldr	r3, [fp, #-44]
+ 847 0924 8320A0E1 		mov	r2, r3, asl #1
+ 848 0928 34301BE5 		ldr	r3, [fp, #-52]
+ 849 092c 024083E0 		add	r4, r3, r2
+ 850 0930 F0315BE1 		ldrsh	r3, [fp, #-16]
+ 851 0934 0300A0E1 		mov	r0, r3
+ 852 0938 FEFFFFEB 		bl	inv_pwlog2
+ 853 093c 0030A0E1 		mov	r3, r0
+ 854 0940 0338A0E1 		mov	r3, r3, asl #16
+ 855 0944 2338A0E1 		mov	r3, r3, lsr #16
+ 856 0948 B030C4E1 		strh	r3, [r4, #0]	@ movhi
+ 857              	.L47:
+ 235:main.c        **** 
+ 236:main.c        **** 		if (sign2)
+ 858              		.loc 1 236 0
+ 859 094c 14301BE5 		ldr	r3, [fp, #-20]
+ 860 0950 000053E3 		cmp	r3, #0
+ 861 0954 1000000A 		beq	.L48
+ 237:main.c        **** 			dst[i - 1] = -inv_pwlog(y2);
+ 862              		.loc 1 237 0
+ 863 0958 2C301BE5 		ldr	r3, [fp, #-44]
+ 864 095c 013063E2 		rsb	r3, r3, #1
+ 865 0960 8330A0E1 		mov	r3, r3, asl #1
+ 866 0964 002063E2 		rsb	r2, r3, #0
+ 867 0968 34301BE5 		ldr	r3, [fp, #-52]
+ 868 096c 024083E0 		add	r4, r3, r2
+ 869 0970 FE305BE1 		ldrsh	r3, [fp, #-14]
+ 870 0974 0300A0E1 		mov	r0, r3
+ 871 0978 FEFFFFEB 		bl	inv_pwlog
+ 872 097c 0030A0E1 		mov	r3, r0
+ 873 0980 0338A0E1 		mov	r3, r3, asl #16
+ 874 0984 2338A0E1 		mov	r3, r3, lsr #16
+ 875 0988 003063E2 		rsb	r3, r3, #0
+ 876 098c 0338A0E1 		mov	r3, r3, asl #16
+ 877 0990 2338A0E1 		mov	r3, r3, lsr #16
+ 878 0994 B030C4E1 		strh	r3, [r4, #0]	@ movhi
+ 879 0998 0C0000EA 		b	.L49
+ 880              	.L48:
+ 238:main.c        **** 		else
+ 239:main.c        **** 			dst[i - 1] = inv_pwlog(y2);
+ 881              		.loc 1 239 0
+ 882 099c 2C301BE5 		ldr	r3, [fp, #-44]
+ 883 09a0 013063E2 		rsb	r3, r3, #1
+ 884 09a4 8330A0E1 		mov	r3, r3, asl #1
+ 885 09a8 002063E2 		rsb	r2, r3, #0
+ 886 09ac 34301BE5 		ldr	r3, [fp, #-52]
+ 887 09b0 024083E0 		add	r4, r3, r2
+ 888 09b4 FE305BE1 		ldrsh	r3, [fp, #-14]
+ 889 09b8 0300A0E1 		mov	r0, r3
+ 890 09bc FEFFFFEB 		bl	inv_pwlog
+ 891 09c0 0030A0E1 		mov	r3, r0
+ 892 09c4 0338A0E1 		mov	r3, r3, asl #16
+ 893 09c8 2338A0E1 		mov	r3, r3, lsr #16
+ 894 09cc B030C4E1 		strh	r3, [r4, #0]	@ movhi
+ 895              	.L49:
+ 896              	.LBE5:
+ 897              		.loc 1 211 0
+ 898 09d0 2C301BE5 		ldr	r3, [fp, #-44]
+ 899 09d4 023043E2 		sub	r3, r3, #2
+ 900 09d8 2C300BE5 		str	r3, [fp, #-44]
+ 901              	.L43:
+ 902 09dc 2C301BE5 		ldr	r3, [fp, #-44]
+ 903 09e0 000053E3 		cmp	r3, #0
+ 904 09e4 9AFFFF1A 		bne	.L50
+ 240:main.c        **** 	}
+ 241:main.c        **** 	// handle i = 0
+ 242:main.c        **** 	int16_t y = src[0];
+ 905              		.loc 1 242 0
+ 906 09e8 30301BE5 		ldr	r3, [fp, #-48]
+ 907 09ec B030D3E1 		ldrh	r3, [r3, #0]	@ movhi
+ 908 09f0 B6324BE1 		strh	r3, [fp, #-38]	@ movhi
+ 243:main.c        **** 	int sign = 0;
+ 909              		.loc 1 243 0
+ 910 09f4 0030A0E3 		mov	r3, #0
+ 911 09f8 24300BE5 		str	r3, [fp, #-36]
+ 244:main.c        **** 
+ 245:main.c        **** 	if (y & 0x8000)
+ 912              		.loc 1 245 0
+ 913 09fc F6325BE1 		ldrsh	r3, [fp, #-38]
+ 914 0a00 000053E3 		cmp	r3, #0
+ 915 0a04 050000AA 		bge	.L51
+ 246:main.c        **** 	{
+ 247:main.c        **** 		y = -y;
+ 916              		.loc 1 247 0
+ 917 0a08 B6325BE1 		ldrh	r3, [fp, #-38]	@ movhi
+ 918 0a0c 003063E2 		rsb	r3, r3, #0
+ 919 0a10 B6324BE1 		strh	r3, [fp, #-38]	@ movhi
+ 248:main.c        **** 		++sign;
+ 920              		.loc 1 248 0
+ 921 0a14 24301BE5 		ldr	r3, [fp, #-36]
+ 922 0a18 013083E2 		add	r3, r3, #1
+ 923 0a1c 24300BE5 		str	r3, [fp, #-36]
+ 924              	.L51:
+ 249:main.c        **** 	}
+ 250:main.c        **** 
+ 251:main.c        **** 	if (sign)
+ 925              		.loc 1 251 0
+ 926 0a20 24301BE5 		ldr	r3, [fp, #-36]
+ 927 0a24 000053E3 		cmp	r3, #0
+ 928 0a28 0B00000A 		beq	.L52
+ 252:main.c        **** 		dst[0] = -inv_pwlog2(y);
+ 929              		.loc 1 252 0
+ 930 0a2c F6325BE1 		ldrsh	r3, [fp, #-38]
+ 931 0a30 0300A0E1 		mov	r0, r3
+ 932 0a34 FEFFFFEB 		bl	inv_pwlog2
+ 933 0a38 0030A0E1 		mov	r3, r0
+ 934 0a3c 0338A0E1 		mov	r3, r3, asl #16
+ 935 0a40 2338A0E1 		mov	r3, r3, lsr #16
+ 936 0a44 003063E2 		rsb	r3, r3, #0
+ 937 0a48 0338A0E1 		mov	r3, r3, asl #16
+ 938 0a4c 2328A0E1 		mov	r2, r3, lsr #16
+ 939 0a50 34301BE5 		ldr	r3, [fp, #-52]
+ 940 0a54 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 941 0a58 070000EA 		b	.L54
+ 942              	.L52:
+ 253:main.c        **** 	else
+ 254:main.c        **** 		dst[0] = inv_pwlog2(y);
+ 943              		.loc 1 254 0
+ 944 0a5c F6325BE1 		ldrsh	r3, [fp, #-38]
+ 945 0a60 0300A0E1 		mov	r0, r3
+ 946 0a64 FEFFFFEB 		bl	inv_pwlog2
+ 947 0a68 0030A0E1 		mov	r3, r0
+ 948 0a6c 0338A0E1 		mov	r3, r3, asl #16
+ 949 0a70 2328A0E1 		mov	r2, r3, lsr #16
+ 950 0a74 34301BE5 		ldr	r3, [fp, #-52]
+ 951 0a78 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 952              	.L54:
+ 255:main.c        **** }
+ 953              		.loc 1 255 0
+ 954 0a7c 08D04BE2 		sub	sp, fp, #8
+ 955 0a80 1048BDE8 		ldmfd	sp!, {r4, fp, lr}
+ 956 0a84 1EFF2FE1 		bx	lr
+ 957              	.LFE6:
+ 1078              	.Letext0:

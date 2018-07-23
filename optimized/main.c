@@ -16,8 +16,8 @@ int header_size = 66;
 
 /************** PROTOTYPES ************/
 
-inline int pwlog2(int);
-inline int inv_pwlog2(int);
+int pwlog2(int);
+int inv_pwlog2(int);
 
 void compress_buffer(int16_t *, int16_t *, int);
 void decompress_buffer(int16_t *, int16_t *, int);
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-inline int pwlog2(int x)
+int pwlog2(int x)
 {
 	if (x < (1 << 4))
 		return x;
@@ -96,7 +96,7 @@ inline int pwlog2(int x)
 	return -1; // error
 }
 
-inline int inv_pwlog2(int y)
+int inv_pwlog2(int y)
 {
 	if (y < (1 << 4))
 		return y;
@@ -228,14 +228,15 @@ void decompress_buffer(int16_t * src, int16_t * dst, int len)
 			++sign2;
 		}
 
-		dst[i] = inv_pwlog2(y1);
-		dst[i - 1] = inv_pwlog2(y2);
-
 		if (sign1)
-			dst[i] = -dst[i];
+			dst[i] = -inv_pwlog2(y1);
+		else 
+			dst[i] = inv_pwlog2(y1);
 
 		if (sign2)
-			dst[i - 1] = -dst[i - 1];
+			dst[i - 1] = -inv_pwlog(y2);
+		else
+			dst[i - 1] = inv_pwlog(y2);
 	}
 	// handle i = 0
 	int16_t y = src[0];
